@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <sys/epoll.h>
 #include "options.h"
+#include "gpio.h"
 
 #define handle_error(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
@@ -15,6 +16,17 @@ int main(int argc, char **argv) {
 
   struct itimerspec new_value;
   int timer_fd;
+
+  int gpio_exported;
+  gpio_isexported(gpio, &gpio_exported);
+
+  if (gpio_exported == 0) {
+    gpio_export(gpio);
+  }
+
+  int gpio_fd;
+  gpio_open(gpio, &gpio_fd);
+  gpio_direction(gpio, 1);
 
   new_value.it_value.tv_sec = interval_ms/1000;
   new_value.it_value.tv_nsec = (interval_ms%1000)*1E6;
@@ -53,11 +65,25 @@ int main(int argc, char **argv) {
       handle_error("read");
     }
 
-    printf("time is %lu.%03lu exp is %llu\n", now.tv_sec, now.tv_nsec/1000, exp);
+    int msec = now.tv_nsec/1E6;
+
+    printf("time is %lu.%03u exp is %llu\n", now.tv_sec, msec, exp);
+
+    if (msec/100 == 0) {
+      gpio_write(gpio_fd, 1);
+    } else {
+      gpio_write(gpio_fd, 0);
+    }
+
   }
 
   close(timer_fd);
   close(efd);
+  gpio_close(gpio_fd);
+
+  if (gpio_exported == 0) {
+    gpio_unexport(gpio);
+  }
 
 	return EXIT_SUCCESS;
 }
