@@ -8,6 +8,7 @@
 #include <sys/epoll.h>
 #include "options.h"
 #include "gpio.h"
+#include "dcf77.h"
 
 #define handle_error(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
@@ -56,9 +57,24 @@ int main(int argc, char **argv) {
       /* revent can now be used */
 
     struct timespec now;
-    if (clock_gettime(CLOCK_MONOTONIC, &now) == -1) {
+    if (clock_gettime(CLOCK_REALTIME, &now) == -1) {
       handle_error("clock_gettime");
     }
+
+
+    now.tv_nsec += (offset_ms % 1000l) * 1000000l;
+    now.tv_sec += offset_ms / 1000l;
+
+    if (now.tv_nsec / 1000000000l != 0) {
+      now.tv_sec -= now.tv_nsec / 1000000000l;
+      now.tv_nsec %= 1000000000l;
+    }
+
+    if (now.tv_nsec < 0) {
+      now.tv_sec -= 1;
+      now.tv_nsec += 1000000000l;
+    }
+
 
     uint64_t exp;
     if (read(timer_fd, &exp, sizeof(uint64_t)) == -1) {
@@ -67,13 +83,22 @@ int main(int argc, char **argv) {
 
     int msec = now.tv_nsec/1E6;
 
-    printf("time is %lu.%03u exp is %llu\n", now.tv_sec, msec, exp);
+    int length = dcf77_encode(&now.tv_sec);
+    int on = 0;
 
     if (msec/100 == 0) {
-      gpio_write(gpio_fd, 1);
-    } else {
-      gpio_write(gpio_fd, 0);
+      // first 100 ms
+      if (length != 2) {
+        on = 1;
+      }
+    } else if (msec/100 == 1) {
+      // second 100 ms
+      if (length == 1) {
+        on = 1;
+      }
     }
+
+    gpio_write(gpio_fd, on);
 
   }
 

@@ -5,6 +5,7 @@
 
 int interval_ms = 100;
 int gpio = -1;
+int offset_ms = 0;
 
 static void usage(FILE* fp, int argc, char** argv)
 {
@@ -14,17 +15,19 @@ static void usage(FILE* fp, int argc, char** argv)
     "-h | --help          Print this message\n"
     "-i | --interval      Interval in ms\n"
     "-g | --gpio          GPIO to use\n"
+    "-o | --offset        Offset in ms\n"
 //    "-v | --version       Print version\n"
     "",
     argv[0]);
   }
 
-static const char short_options [] = "hvi:g:";
+static const char short_options [] = "hvi:g:o:";
 
 static const struct option long_options [] = {
   { "help",       no_argument,          NULL,             'h'},
   { "interval",   required_argument,    NULL,             'i'},
   { "gpio",       required_argument,    NULL,             'g'},
+  { "offset",     required_argument,    NULL,             'o'},
 //  { "version",  no_argument,    NULL,   'v' },
   { 0, 0, 0, 0 }
 };
@@ -51,6 +54,10 @@ void parse_options(int argc, char** argv)
 
       case 'g':
         gpio = atoi(optarg);
+        break;
+
+      case 'o':
+        offset_ms = atoi(optarg);
         break;
 
       default:
