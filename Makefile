@@ -23,11 +23,11 @@ EXENAME = dcf77gen
 $(EXENAME): $(OBJS)
 	$(CXX) $(OBJS) -o $(EXENAME) $(LDFLAGS)
 
-$(OBJS): $(HDRS) Makefile
+$(OBJS): $(HDRS) Makefile version.h
 
 main.o: $(HDRS) Makefile $(SRCS_C) $(SRCS_CXX)
 
-.PHONY: clean
+.PHONY: clean version.h
 
 clean:
 	rm -f $(OBJS) $(TEMP)
@@ -37,3 +37,6 @@ clean:
 
 %.o : %.cpp
 	$(CXX) $*.cpp -c $(CXXFLAGS)
+
+version.h:
+	printf "#ifndef _VERSION_H_\n#define GIT_VERSION \"`git describe --tags --always --dirty`\"\n#define GIT_SHORT_VERSION \"`git describe --tags --always --abbrev=0`\"\n#endif\n" > version.h

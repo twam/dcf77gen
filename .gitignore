@@ -1,2 +1,3 @@
 *.o
 dcf77gen
+version.h
