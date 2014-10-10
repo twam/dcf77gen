@@ -13,6 +13,9 @@
 #define handle_error(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
 int main(int argc, char **argv) {
+  srand(time(NULL));
+  srand48(time(NULL));
+
   parse_options(argc, argv);
 
   struct itimerspec new_value;
@@ -95,6 +98,14 @@ int main(int argc, char **argv) {
       // second 100 ms
       if (length == 1) {
         on = 1;
+      }
+    }
+
+    if (noise > 0) {
+      if (drand48()*100 <= noise) {
+        if (drand48() <= 0.5) {
+          on = on == 1 ? 0 : 1;
+        }
       }
     }
 

@@ -16,6 +16,18 @@ int dcf77_filltimecode(const time_t* time) {
 
   memset(timecode, 0, sizeof(timecode));
 
+  // TODO: change between dst and nt at the end of this hour
+  timecode[16] = 0;
+
+  if (timecode_tm.tm_isdst) {
+    timecode[17] = 1;
+  } else {
+    timecode[18] = 1;
+  }
+
+  // leap second at the end of this hour
+  timecode[19] = 0;
+
   // start of time
   timecode[20] = 1;
 
@@ -57,7 +69,7 @@ int dcf77_filltimecode(const time_t* time) {
   timecode[41] = !!(day_tens & 0x02);
 
   // week day
-  uint8_t weekday_ones = timecode_tm.tm_wday % 10;
+  uint8_t weekday_ones = timecode_tm.tm_wday == 0 ? 7 : timecode_tm.tm_wday;
   timecode[42] = !!(weekday_ones & 0x01);
   timecode[43] = !!(weekday_ones & 0x02);
   timecode[44] = !!(weekday_ones & 0x04);
