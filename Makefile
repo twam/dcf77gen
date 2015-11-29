@@ -3,7 +3,7 @@ CFLAGS = -O2 -Wall -march=native -Wno-unknown-pragmas -ggdb
 # C++ Flags
 CXXFLAGS = $(CFLAGS)
 
-LDFLAGS = -lm
+LDFLAGS = -lm -lrt
 
 SRCS_C = $(wildcard *.c)
 SRCS_CXX = $(wildcard *.cpp)
